@@ -1,73 +1,48 @@
-import React from 'react';
+﻿import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { createBrowserRouter, RouterProvider } from 'react-router';
+import { BrowserRouter, Outlet, Route, Routes, RouterProvider } from 'react-router';
 import AppShell from './components/AppShell';
-import DemoLayout from './components/DemoLayout';
-import PageA from './pages/PageA';
-import EffectPageB from './pages/EffectPageB';
-import LoaderPageB from './pages/LoaderPageB';
-import { productLoader } from './api/products';
+import ProblemDemo from './demos/1-problem/ProblemDemo';
+import CssDemo from './demos/2-css/CssDemo';
+import { createRouter as createLoaderRouter } from './demos/3-loader/routes';
+import { createRouter as createCombinedRouter } from './demos/4-combined/routes';
 import './style.css';
 
-// Yksi Data Mode -router, jotta samaan sovellukseen voidaan tehdä neljä demoa.
-// Demoissa 1 ja 2 käytetään Declarative Mode -tyylistä Link/useParams/useEffect-
-// datanhakua. Ne eivät tarvitse loaderia. Loader-demoissa 3 ja 4 käytetään
-// nimenomaan Data Mode -ominaisuutta. BrowserRouter + Routes eivät tue loaderia.
-const routes = [
-  {
-    path: 'problem',
-    element: <DemoLayout mode="problem" />,
-    children: [
-      { index: true, element: <PageA mode="problem" /> },
-      { path: 'products/:id', element: <EffectPageB mode="problem" /> },
-    ],
-  },
-  {
-    path: 'css',
-    element: <DemoLayout mode="css" />,
-    children: [
-      { index: true, element: <PageA mode="css" /> },
-      { path: 'products/:id', element: <EffectPageB mode="css" /> },
-    ],
-  },
-  {
-    path: 'loader',
-    element: <DemoLayout mode="loader" />,
-    children: [
-      { index: true, element: <PageA mode="loader" /> },
-      { path: 'products/:id', element: <LoaderPageB mode="loader" />, loader: productLoader },
-    ],
-  },
-  {
-    path: 'combined',
-    element: <DemoLayout mode="combined" />,
-    children: [
-      { index: true, element: <PageA mode="combined" /> },
-      { path: 'products/:id', element: <LoaderPageB mode="combined" />, loader: productLoader },
-    ],
-  },
-];
-
-const router = createBrowserRouter([
-  { 
-    path: '/', 
-    element: <AppShell />, 
-    children: [
-      { index: true, element: <Intro /> },
-      ...routes,
-      { path: '*', element: <p>Sivua ei löytynyt.</p> },
-    ]
-  }
-]);
 
 function Intro() {
   return (
     <section className="intro">
       <h1>Footerin hyppiminen ja React Routerin datan lataaminen</h1>
-      <p>Neljä esimerkkiä asiasta ja sen mahdollisista ratkaisuista. Kaikki hakevat DummyJSON-palvelusta tuotteen kahden sekunnin viiveellä. Vertaa, mitä käyttäjälle näkyy sillä aikaa.</p>
-      <p>Demoissa 1–2 data haetaan komponentin <code>useEffect</code>-hookissa. Demoissa 3–4 reitti käyttää Routerin <code>loader</code>-funktiota. Hox! loader on käytettävissä vain jos router on ns. data mode -tilassa.</p>
+      <p>Neljä esimerkkiä asiasta ja sen mahdollisista ratkaisuista. Kaikki hakevat DummyJSON-palvelusta tuotteen yhden sekunnin viiveellä. Vertaa, mitä käyttäjälle näkyy sillä aikaa.</p>
+      <p>Demoissa 1–2 data haetaan komponentin <code>useEffect</code>-hookissa ja reitit on määritelty Declarative Modella (<code>BrowserRouter</code>, <code>Routes</code>). Demoissa 3–4 reitti käyttää Routerin <code>loader</code>-funktiota. Hox! loader on käytettävissä vain jos router on ns. data mode -tilassa (<code>createBrowserRouter</code>).</p>
     </section>
   );
 }
 
-createRoot(document.getElementById('root')).render(<RouterProvider router={router} />);
+function DeclarativeApp() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route element={<AppShell><Outlet /></AppShell>}>
+          <Route index element={<Intro />} />
+          <Route path="problem/*" element={<ProblemDemo />} />
+          <Route path="css/*" element={<CssDemo />} />
+          <Route path="*" element={<p>Sivua ei löytynyt.</p>} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+const path = window.location.pathname;
+
+let app;
+if (path.startsWith('/loader')) {
+  app = <RouterProvider router={createLoaderRouter()} />;
+} else if (path.startsWith('/combined')) {
+  app = <RouterProvider router={createCombinedRouter()} />;
+} else {
+  app = <DeclarativeApp />;
+}
+
+createRoot(document.getElementById('root')).render(app);

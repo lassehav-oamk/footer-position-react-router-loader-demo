@@ -14,8 +14,3 @@ export async function getProduct(id, signal) {
   }
   return response.json();
 }
-
-// Data Moden loader: saa id:n URL:sta, välittää abort-signaalin fetchille.
-export function productLoader({ params, request }) {
-  return getProduct(params.id, request.signal);
-}
