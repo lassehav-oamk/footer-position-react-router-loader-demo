@@ -1,0 +1,9 @@
+/* Demon korkeus on ikkunan korkeus miinus topbar (56px) ja marginaali (16px), joten footer on ruudun alareunassa myös lyhyellä sisällöllä. */
+.stable-layout { 
+    min-height: calc(100vh - 72px); 
+    display: flex; 
+    flex-direction: column; 
+}
+
+.stable-layout .demo-content { flex: 1; }
+
